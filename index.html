@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Durchdacht — Kalkulátor montáže</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;color:#1a1a1a;background:#f5f5f3;padding:1.5rem}
+.wrap{max-width:720px;margin:0 auto;background:white;border-radius:12px;padding:1.5rem;border:1px solid #e0ddd5}
+h2{font-size:16px;font-weight:500;margin-bottom:1.5rem;color:#1a1a1a}
+.prod-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:1.5rem}
+.prod-tab{padding:10px;border:1px solid #e0ddd5;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:500;background:#f5f5f3;color:#888;transition:all 0.15s}
+.prod-tab.active{border:2px solid #378ADD;background:#E6F1FB;color:#185FA5}
+.section-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin:1.25rem 0 6px}
+.area-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.area-btn{background:#f5f5f3;border:1px solid #e0ddd5;border-radius:8px;padding:10px 6px;cursor:pointer;text-align:center;transition:all 0.15s}
+.area-btn.active{border:2px solid #378ADD;background:#E6F1FB}
+.area-label{font-size:13px;font-weight:500}
+.area-sub{font-size:11px;color:#888;margin-top:2px}
+.area-price{font-size:13px;font-weight:500;color:#185FA5;margin-top:3px}
+.card{background:white;border:1px solid #e0ddd5;border-radius:12px;padding:.875rem 1rem;margin-bottom:6px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0ede5}
+.row:last-child{border-bottom:none;padding-bottom:0}
+.row:first-child{padding-top:0}
+.row-left{display:flex;flex-direction:column;gap:1px}
+.row-name{font-size:13px}
+.row-price{font-size:11px;color:#888}
+.row-price.pct{color:#854F0B}
+.toggle-sw{position:relative;width:34px;height:18px;flex-shrink:0}
+.toggle-sw input{opacity:0;width:0;height:0}
+.trk{position:absolute;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:18px;cursor:pointer;transition:.2s}
+.trk:before{content:'';position:absolute;width:12px;height:12px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s}
+input:checked+.trk{background:#378ADD}
+input:checked+.trk:before{transform:translateX(16px)}
+.ctr{display:flex;align-items:center;gap:6px}
+.cbtn{width:22px;height:22px;border:1px solid #e0ddd5;border-radius:6px;background:#f5f5f3;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:#1a1a1a}
+.cval{font-size:13px;font-weight:500;min-width:14px;text-align:center}
+.mat-row{display:flex;align-items:center;gap:8px;margin-top:1rem}
+.mat-row label{font-size:13px;color:#888;white-space:nowrap}
+.mat-row input{flex:1;padding:6px 10px;border:1px solid #e0ddd5;border-radius:8px;font-size:13px;background:white;color:#1a1a1a}
+.result-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:1.25rem}
+.metric{background:#f5f5f3;border-radius:8px;padding:10px 12px}
+.metric-label{font-size:11px;color:#888;margin-bottom:3px}
+.metric-val{font-size:19px;font-weight:500}
+.metric-val.cl{color:#185FA5}
+.metric-val.wk{color:#3B6D11}
+.metric-val.co{color:#993056}
+.check-row{display:flex;align-items:center;justify-content:space-between;margin-top:.75rem;padding:8px 1rem;border-radius:8px;font-size:13px}
+.ok{background:#EAF3DE;color:#3B6D11}
+.bad{background:#FCEBEB;color:#A32D2D}
+.pct-note{font-size:11px;color:#854F0B;margin-top:6px;padding:6px 8px;background:#FAEEDA;border-radius:8px}
+.mount-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h2>Durchdacht — Kalkulátor montáže</h2>
+
+<div class="prod-tabs">
+  <div class="prod-tab active" onclick="setProduct('pergola',this)">Bioklimatická pergola</div>
+  <div class="prod-tab" onclick="setProduct('roof',this)">Střecha terasy</div>
+</div>
+
+<div class="section-label">Typ uchycení</div>
+<div class="mount-grid">
+  <div class="area-btn active" id="mount-free" onclick="setMount('free',this)" style="text-align:center;padding:8px">
+    <div class="area-label">Volně stojící</div>
+  </div>
+  <div class="area-btn" id="mount-wall" onclick="setMount('wall',this)" style="text-align:center;padding:8px">
+    <div class="area-label">Ke zdi (+2 500 Kč)</div>
+  </div>
+</div>
+
+<div class="section-label">Plocha</div>
+<div class="area-grid">
+  <div class="area-btn active" onclick="selectArea('small',this)">
+    <div class="area-label">do 12 m²</div>
+    <div class="area-sub">např. 3×4 m</div>
+    <div class="area-price">12 000 Kč</div>
+  </div>
+  <div class="area-btn" onclick="selectArea('medium',this)">
+    <div class="area-label">12–20 m²</div>
+    <div class="area-sub">např. 4×5 m</div>
+    <div class="area-price">16 000 Kč</div>
+  </div>
+  <div class="area-btn" onclick="selectArea('large',this)">
+    <div class="area-label">20+ m²</div>
+    <div class="area-sub">např. 4×6 m</div>
+    <div class="area-price">21 000 Kč</div>
+  </div>
+</div>
+
+<div class="section-label">Příplatky</div>
+<div class="card">
+  <div class="row">
+    <div class="row-left"><span class="row-name">Elektro (motory + LED)</span><span class="row-price">+2 000 Kč</span></div>
+    <label class="toggle-sw"><input type="checkbox" id="t-elec" onchange="calc()"><span class="trk"></span></label>
+  </div>
+  <div class="row">
+    <div class="row-left"><span class="row-name">Složitý terén / přístup</span><span class="row-price">+3 000 Kč</span></div>
+    <label class="toggle-sw"><input type="checkbox" id="t-terrain" onchange="calc()"><span class="trk"></span></label>
+  </div>
+  <div class="row" id="row-glass-roof" style="display:none">
+    <div class="row-left"><span class="row-name">Skleněná střecha (vs polykarbonát)</span><span class="row-price">+2 000 Kč</span></div>
+    <label class="toggle-sw"><input type="checkbox" id="t-glassroof" onchange="calc()"><span class="trk"></span></label>
+  </div>
+</div>
+
+<div class="section-label">Příslušenství — montáž</div>
+<div class="card">
+  <div class="row">
+    <div class="row-left"><span class="row-name">Screen elektrická</span><span class="row-price">2 500 Kč / ks</span></div>
+    <div class="ctr"><button class="cbtn" onclick="chg('se',-1)">−</button><span class="cval" id="c-se">0</span><button class="cbtn" onclick="chg('se',1)">+</button></div>
+  </div>
+  <div class="row">
+    <div class="row-left"><span class="row-name">Screen manuální</span><span class="row-price">1 500 Kč / ks</span></div>
+    <div class="ctr"><button class="cbtn" onclick="chg('sm',-1)">−</button><span class="cval" id="c-sm">0</span><button class="cbtn" onclick="chg('sm',1)">+</button></div>
+  </div>
+  <div class="row">
+    <div class="row-left"><span class="row-name">Skleněný panel (fixovaný)</span><span class="row-price">2 500 Kč / ks</span></div>
+    <div class="ctr"><button class="cbtn" onclick="chg('gp',-1)">−</button><span class="cval" id="c-gp">0</span><button class="cbtn" onclick="chg('gp',1)">+</button></div>
+  </div>
+  <div class="row">
+    <div class="row-left"><span class="row-name">Posuvné dveře (manuální)</span><span class="row-price">500 Kč / sklo</span></div>
+    <div class="ctr"><button class="cbtn" onclick="chg('sd',-1)">−</button><span class="cval" id="c-sd">0</span><button class="cbtn" onclick="chg('sd',1)">+</button></div>
+  </div>
+  <div class="row">
+    <div class="row-left"><span class="row-name">Stěna polykarbonát (fest)</span><span class="row-price">300 Kč / pásek</span></div>
+    <div class="ctr"><button class="cbtn" onclick="chg('pc',-1)">−</button><span class="cval" id="c-pc">0</span><button class="cbtn" onclick="chg('pc',1)">+</button></div>
+  </div>
+  <div class="row">
+    <div class="row-left"><span class="row-name">Topný systém</span><span class="row-price">500 Kč / ks</span></div>
+    <div class="ctr"><button class="cbtn" onclick="chg('heat',-1)">−</button><span class="cval" id="c-heat">0</span><button class="cbtn" onclick="chg('heat',1)">+</button></div>
+  </div>
+  <div class="row">
+    <div class="row-left"><span class="row-name">Klika dveří / dešťové čidlo / LED / izolace</span><span class="row-price">0 Kč (zahrnuto)</span></div>
+    <div style="font-size:12px;color:#888">—</div>
+  </div>
+</div>
+
+<div class="section-label">Položky od ceny materiálu (zadejte cenu)</div>
+<div class="mat-row">
+  <label>Materiál bez DPH (Kč)</label>
+  <input type="number" id="mat" placeholder="např. 230 540" oninput="calc()" step="1000">
+</div>
+<div id="pct-items" style="display:none">
+  <div class="card" style="margin-top:8px">
+    <div class="row">
+      <div class="row-left"><span class="row-name">Boční stěna / lamela fixovaná</span><span class="row-price pct">10 % z materiálu</span></div>
+      <label class="toggle-sw"><input type="checkbox" id="t-sidewall" onchange="calc()"><span class="trk"></span></label>
+    </div>
+    <div class="row">
+      <div class="row-left"><span class="row-name">Markýza (elektro)</span><span class="row-price pct">10 % z materiálu</span></div>
+      <label class="toggle-sw"><input type="checkbox" id="t-marquee" onchange="calc()"><span class="trk"></span></label>
+    </div>
+    <div class="row">
+      <div class="row-left"><span class="row-name">Profily na dveře</span><span class="row-price pct">10 % z materiálu</span></div>
+      <label class="toggle-sw"><input type="checkbox" id="t-profile" onchange="calc()"><span class="trk"></span></label>
+    </div>
+  </div>
+</div>
+<div id="pct-hint" class="pct-note" style="display:none">Položky % jsou vypočítány z zadané ceny materiálu</div>
+
+<div class="result-grid">
+  <div class="metric"><div class="metric-label">Zákazník platí</div><div class="metric-val cl" id="r-cl">12 000 Kč</div></div>
+  <div class="metric"><div class="metric-label">Dělníci (85 %)</div><div class="metric-val wk" id="r-wk">10 200 Kč</div></div>
+  <div class="metric"><div class="metric-label">Firma (15 %)</div><div class="metric-val co" id="r-co">1 800 Kč</div></div>
+</div>
+
+<div class="check-row" id="chk" style="display:none">
+  <span id="chk-txt"></span><span id="chk-badge"></span>
+</div>
+
+</div>
+
+<script>
+const BASE={small:12000,medium:16000,large:21000};
+const ACC_FIXED={se:2500,sm:1500,gp:2500,sd:500,pc:300,heat:500};
+let st={product:'pergola',mount:'free',area:'small',accs:{se:0,sm:0,gp:0,sd:0,pc:0,heat:0}};
+
+function setProduct(p,el){
+  st.product=p;
+  document.querySelectorAll('.prod-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('row-glass-roof').style.display=p==='roof'?'flex':'none';
+  calc();
+}
+function setMount(m,el){
+  st.mount=m;
+  document.querySelectorAll('#mount-free,#mount-wall').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  calc();
+}
+function selectArea(a,el){
+  st.area=a;
+  document.querySelectorAll('.area-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  calc();
+}
+function chg(k,d){
+  st.accs[k]=Math.max(0,(st.accs[k]||0)+d);
+  document.getElementById('c-'+k).textContent=st.accs[k];
+  calc();
+}
+function fmt(n){return Math.round(n).toLocaleString('cs-CZ')+' Kč'}
+function calc(){
+  let total=BASE[st.area];
+  if(st.mount==='wall') total+=2500;
+  if(document.getElementById('t-elec').checked) total+=2000;
+  if(document.getElementById('t-terrain').checked) total+=3000;
+  if(st.product==='roof'&&document.getElementById('t-glassroof').checked) total+=2000;
+  Object.keys(st.accs).forEach(k=>{total+=st.accs[k]*(ACC_FIXED[k]||0)});
+  const mat=parseFloat(document.getElementById('mat').value)||0;
+  const hasMat=mat>0;
+  document.getElementById('pct-items').style.display=hasMat?'block':'none';
+  document.getElementById('pct-hint').style.display=hasMat?'block':'none';
+  if(hasMat){
+    if(document.getElementById('t-sidewall').checked) total+=mat*0.10;
+    if(document.getElementById('t-marquee').checked) total+=mat*0.10;
+    if(document.getElementById('t-profile').checked) total+=mat*0.10;
+  }
+  const wk=Math.round(total*0.85);
+  const co=Math.round(total*0.15);
+  document.getElementById('r-cl').textContent=fmt(total);
+  document.getElementById('r-wk').textContent=fmt(wk);
+  document.getElementById('r-co').textContent=fmt(co);
+  const chkEl=document.getElementById('chk');
+  if(hasMat){
+    const pct=(total/mat*100).toFixed(1);
+    chkEl.style.display='flex';
+    if(pct>=13){
+      chkEl.className='check-row ok';
+      document.getElementById('chk-txt').textContent='Montáž '+pct+' % z materiálu';
+      document.getElementById('chk-badge').textContent='OK (≥13 %)';
+    } else {
+      chkEl.className='check-row bad';
+      document.getElementById('chk-txt').textContent='Montáž '+pct+' % z materiálu';
+      document.getElementById('chk-badge').textContent='Pod 13 % — uprav cenu';
+    }
+  } else {
+    chkEl.style.display='none';
+  }
+}
+calc();
+</script>
+</body>
+</html>
