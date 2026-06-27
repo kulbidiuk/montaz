@@ -118,6 +118,25 @@ def now_dt(timezone: str) -> datetime:
     return datetime.now()
 
 
+def message_dt(msg: dict, timezone: str) -> datetime:
+    """Timestamp for the inbox block.
+
+    Prefer Telegram's ``date`` (Unix UTC, the time the message was *sent*) so
+    that messages delivered late — after a restart or polling delay — are filed
+    under their real time rather than the moment we happened to process them.
+    Falls back to the current time if ``date`` is missing.
+    """
+    ts = msg.get("date")
+    if ts:
+        if timezone and ZoneInfo is not None:
+            try:
+                return datetime.fromtimestamp(ts, ZoneInfo(timezone))
+            except Exception:  # bad tz name -> local time
+                pass
+        return datetime.fromtimestamp(ts)
+    return now_dt(timezone)
+
+
 def format_entry(template: str, dt: datetime, datetime_format: str,
                  content: str, voice_transcript: str = "") -> str:
     """Render one inbox block from the template.
@@ -278,7 +297,7 @@ def process_message(cfg: dict, msg: dict) -> None:
             log("skipped message with no usable content")
             return
 
-    dt = now_dt(cfg.get("timezone", ""))
+    dt = message_dt(msg, cfg.get("timezone", ""))
     entry = format_entry(
         cfg["template"], dt, cfg["datetime_format"], content, voice_transcript
     )
@@ -337,13 +356,23 @@ def main(argv: list) -> None:
         try:
             updates = get_updates(cfg["bot_token"], offset, cfg["poll_timeout"])
             for update in updates:
-                offset = update["update_id"] + 1
                 msg = update.get("message")
                 if msg:
                     try:
                         process_message(cfg, msg)
                     except Exception as exc:
-                        log(f"error processing update {update['update_id']}: {exc}")
+                        # Capture failed (vault offline, disk full, voice download
+                        # error...). Do NOT advance the offset: leave the update in
+                        # Telegram's queue so it is redelivered and retried, rather
+                        # than silently dropping the note. A retry may re-append a
+                        # message whose write partly succeeded — duplicates are
+                        # acceptable (triage dedups); lost thoughts are not.
+                        log(f"error processing update {update['update_id']}: {exc} "
+                            "— offset not advanced, will retry")
+                        time.sleep(5)
+                        break
+                # Only commit progress past an update once it is safely captured.
+                offset = update["update_id"] + 1
                 save_offset(sf, offset)
         except KeyboardInterrupt:
             log("stopped.")

@@ -37,6 +37,19 @@ class FormatEntryTests(unittest.TestCase):
         self.assertIn("use {datetime} here", entry)
 
 
+class MessageDtTests(unittest.TestCase):
+    def test_uses_telegram_date_not_processing_time(self):
+        from datetime import timezone
+        sent = datetime(2026, 6, 27, 6, 5, tzinfo=timezone.utc)
+        msg = {"date": int(sent.timestamp())}
+        dt = bot.message_dt(msg, "UTC")
+        self.assertEqual(dt.strftime("%Y-%m-%d %H:%M"), "2026-06-27 06:05")
+
+    def test_falls_back_to_now_when_date_missing(self):
+        dt = bot.message_dt({}, "UTC")
+        self.assertIsInstance(dt, datetime)
+
+
 class AppendInboxTests(unittest.TestCase):
     def test_creates_dirs_and_separates_entries(self):
         with tempfile.TemporaryDirectory() as tmp:
