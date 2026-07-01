@@ -1,0 +1,21 @@
+# systemd unit для всегда-включённого захвата (Telegram -> inbox.md).
+# Поставь файл в ~/.config/systemd/user/tg-obsidian-bot.service и запусти:
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now tg-obsidian-bot
+#
+# Замени пути на свои. config.json лежит рядом с bot.py и содержит токен + vault_path.
+
+[Unit]
+Description=Telegram -> Obsidian capture bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/montaz/telegram-obsidian
+ExecStart=/usr/bin/python3 %h/montaz/telegram-obsidian/bot.py %h/montaz/telegram-obsidian/config.json
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

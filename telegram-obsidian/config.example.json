@@ -1,0 +1,18 @@
+{
+  "bot_token": "12345678:AAE-replace-with-token-from-BotFather",
+  "vault_path": "~/ObsidianVault",
+  "inbox_file": "_BRAIN/Инбокс/inbox.md",
+  "attachments_dir": "_BRAIN/Инбокс/attachments",
+  "allowed_user_ids": [],
+  "timezone": "Europe/Moscow",
+  "template": "## {datetime} · telegram\n{content}{voice_transcript}\n\n---\n",
+  "datetime_format": "%Y-%m-%d %H:%M",
+  "confirm_receipt": true,
+  "voice": {
+    "save": true,
+    "transcribe": false,
+    "transcribe_cmd": ""
+  },
+  "state_file": "state.json",
+  "poll_timeout": 30
+}
