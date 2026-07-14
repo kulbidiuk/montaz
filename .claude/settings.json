@@ -5,9 +5,16 @@
         "source": "github",
         "repo": "affaan-m/ECC"
       }
+    },
+    "ui-ux-pro-max-skill": {
+      "source": {
+        "source": "github",
+        "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
+      }
     }
   },
   "enabledPlugins": {
-    "ecc@ecc": true
+    "ecc@ecc": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true
   }
 }
