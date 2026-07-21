@@ -3,175 +3,455 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0F172A">
 <title>Durchdacht — Kalkulátor montáže</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* ── Design tokens (Enterprise SaaS · UI/UX Pro Max) ───────────────── */
+:root{
+  --primary:#0F172A;
+  --secondary:#334155;
+  --accent:#0369A1;
+  --accent-strong:#075985;
+  --accent-soft:#E0F2FE;
+  --accent-ring:rgba(3,105,161,.28);
+  --bg:#F1F5F9;
+  --surface:#FFFFFF;
+  --surface-2:#F8FAFC;
+  --fg:#0B1220;
+  --muted:#64748B;
+  --muted-2:#94A3B8;
+  --border:#E2E8F0;
+  --border-strong:#CBD5E1;
+
+  --ok:#15803D; --ok-bg:#F0FDF4; --ok-border:#BBF7D0;
+  --warn:#B45309; --warn-bg:#FFFBEB; --warn-border:#FDE68A;
+  --bad:#B91C1C; --bad-bg:#FEF2F2; --bad-border:#FECACA;
+  --info:#185FA5;
+
+  --radius:14px; --radius-sm:10px; --radius-xs:8px;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.06);
+  --shadow:0 6px 20px -8px rgba(15,23,42,.18),0 2px 6px -4px rgba(15,23,42,.10);
+  --shadow-accent:0 8px 24px -10px rgba(3,105,161,.45);
+  --ease:cubic-bezier(.2,.6,.2,1);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --primary:#E2E8F0; --secondary:#CBD5E1;
+    --accent:#38BDF8; --accent-strong:#7DD3FC; --accent-soft:#0B2942; --accent-ring:rgba(56,189,248,.30);
+    --bg:#0B1220; --surface:#111A2E; --surface-2:#0E1626;
+    --fg:#F1F5F9; --muted:#94A3B8; --muted-2:#64748B;
+    --border:#22304A; --border-strong:#334155;
+    --ok:#4ADE80; --ok-bg:#0E2519; --ok-border:#14532D;
+    --warn:#FBBF24; --warn-bg:#2A1E07; --warn-border:#78350F;
+    --bad:#F87171; --bad-bg:#2A0F0F; --bad-border:#7F1D1D;
+    --info:#7DD3FC;
+    --shadow:0 10px 30px -12px rgba(0,0,0,.6),0 2px 8px -4px rgba(0,0,0,.5);
+    --shadow-accent:0 10px 28px -12px rgba(56,189,248,.4);
+  }
+}
+
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,sans-serif;color:#1a1a1a;background:#f5f5f3;padding:1.5rem}
-.wrap{max-width:720px;margin:0 auto;background:white;border-radius:12px;padding:1.5rem;border:1px solid #e0ddd5}
-h2{font-size:16px;font-weight:500;margin-bottom:1.5rem;color:#1a1a1a}
-.prod-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:1.5rem}
-.prod-tab{padding:10px;border:1px solid #e0ddd5;border-radius:8px;cursor:pointer;text-align:center;font-size:13px;font-weight:500;background:#f5f5f3;color:#888;transition:all 0.15s}
-.prod-tab.active{border:2px solid #378ADD;background:#E6F1FB;color:#185FA5}
-.section-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin:1.25rem 0 6px}
-.area-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.area-btn{background:#f5f5f3;border:1px solid #e0ddd5;border-radius:8px;padding:10px 6px;cursor:pointer;text-align:center;transition:all 0.15s}
-.area-btn.active{border:2px solid #378ADD;background:#E6F1FB}
-.area-label{font-size:13px;font-weight:500}
-.area-sub{font-size:11px;color:#888;margin-top:2px}
-.area-price{font-size:13px;font-weight:500;color:#185FA5;margin-top:3px}
-.card{background:white;border:1px solid #e0ddd5;border-radius:12px;padding:.875rem 1rem;margin-bottom:6px}
-.row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0ede5}
-.row:last-child{border-bottom:none;padding-bottom:0}
-.row:first-child{padding-top:0}
-.row-left{display:flex;flex-direction:column;gap:1px}
-.row-name{font-size:13px}
-.row-price{font-size:11px;color:#888}
-.row-price.pct{color:#854F0B}
-.toggle-sw{position:relative;width:34px;height:18px;flex-shrink:0}
-.toggle-sw input{opacity:0;width:0;height:0}
-.trk{position:absolute;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:18px;cursor:pointer;transition:.2s}
-.trk:before{content:'';position:absolute;width:12px;height:12px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s}
-input:checked+.trk{background:#378ADD}
-input:checked+.trk:before{transform:translateX(16px)}
-.ctr{display:flex;align-items:center;gap:6px}
-.cbtn{width:22px;height:22px;border:1px solid #e0ddd5;border-radius:6px;background:#f5f5f3;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:#1a1a1a}
-.cval{font-size:13px;font-weight:500;min-width:14px;text-align:center}
-.mat-row{display:flex;align-items:center;gap:8px;margin-top:1rem}
-.mat-row label{font-size:13px;color:#888;white-space:nowrap}
-.mat-row input{flex:1;padding:6px 10px;border:1px solid #e0ddd5;border-radius:8px;font-size:13px;background:white;color:#1a1a1a}
-.result-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:1.25rem}
-.metric{background:#f5f5f3;border-radius:8px;padding:10px 12px}
-.metric-label{font-size:11px;color:#888;margin-bottom:3px}
-.metric-val{font-size:19px;font-weight:500}
-.metric-val.cl{color:#185FA5}
-.metric-val.wk{color:#3B6D11}
-.metric-val.co{color:#993056}
-.check-row{display:flex;align-items:center;justify-content:space-between;margin-top:.75rem;padding:8px 1rem;border-radius:8px;font-size:13px}
-.ok{background:#EAF3DE;color:#3B6D11}
-.bad{background:#FCEBEB;color:#A32D2D}
-.pct-note{font-size:11px;color:#854F0B;margin-top:6px;padding:6px 8px;background:#FAEEDA;border-radius:8px}
-.mount-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  color:var(--fg);background:var(--bg);
+  padding:1.25rem;line-height:1.45;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+.wrap{
+  max-width:560px;margin:0 auto;background:var(--surface);
+  border-radius:20px;border:1px solid var(--border);
+  box-shadow:var(--shadow);overflow:hidden;
+  animation:rise .45s var(--ease) both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ── Header ────────────────────────────────────────────────────────── */
+.hd{
+  padding:1.35rem 1.5rem 1.15rem;
+  background:linear-gradient(160deg,var(--primary),color-mix(in srgb,var(--primary) 82%,var(--accent)));
+  color:#fff;position:relative;
+}
+@media (prefers-color-scheme:dark){.hd{color:#0B1220}}
+.hd .brand{display:flex;align-items:center;gap:.6rem}
+.hd .logo{
+  width:34px;height:34px;border-radius:10px;flex:none;
+  display:grid;place-items:center;background:rgba(255,255,255,.14);
+  border:1px solid rgba(255,255,255,.22);
+}
+@media (prefers-color-scheme:dark){.hd .logo{background:rgba(11,18,32,.18);border-color:rgba(11,18,32,.25)}}
+.hd .logo svg{width:19px;height:19px}
+.hd h1{font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.15}
+.hd p{font-size:12px;font-weight:500;opacity:.72;margin-top:1px}
+
+.body{padding:1.35rem 1.5rem 1.5rem}
+
+/* ── Section labels ────────────────────────────────────────────────── */
+.section-label{
+  display:flex;align-items:center;gap:.45rem;
+  font-size:11px;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.07em;margin:1.5rem 0 .55rem;
+}
+.section-label:first-of-type{margin-top:.25rem}
+.section-label svg{width:14px;height:14px;stroke:var(--muted-2)}
+
+/* ── Segmented / choice grids ──────────────────────────────────────── */
+.prod-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.prod-tab{
+  padding:12px 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  cursor:pointer;text-align:center;font-size:13.5px;font-weight:600;
+  background:var(--surface-2);color:var(--muted);
+  transition:border-color .18s var(--ease),background .18s var(--ease),color .18s var(--ease),box-shadow .18s var(--ease);
+}
+.prod-tab:hover{border-color:var(--border-strong);color:var(--fg)}
+.prod-tab.active{
+  border-color:var(--accent);background:var(--accent-soft);color:var(--accent-strong);
+  box-shadow:0 0 0 3px var(--accent-ring);
+}
+.mount-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.area-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.area-btn{
+  position:relative;background:var(--surface-2);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);padding:11px 8px;cursor:pointer;text-align:center;
+  transition:border-color .18s var(--ease),background .18s var(--ease),box-shadow .18s var(--ease),transform .12s var(--ease);
+}
+.area-btn:hover{border-color:var(--border-strong)}
+.area-btn:active{transform:scale(.985)}
+.area-btn.active{
+  border-color:var(--accent);background:var(--accent-soft);
+  box-shadow:0 0 0 3px var(--accent-ring);
+}
+.area-btn .tick{
+  position:absolute;top:6px;right:6px;width:16px;height:16px;border-radius:50%;
+  background:var(--accent);display:none;place-items:center;color:#fff;
+}
+@media (prefers-color-scheme:dark){.area-btn .tick{color:#0B1220}}
+.area-btn.active .tick{display:grid}
+.area-btn .tick svg{width:11px;height:11px;stroke-width:3}
+.area-label{font-size:13.5px;font-weight:600;color:var(--fg)}
+.area-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.area-price{font-size:12.5px;font-weight:700;color:var(--accent-strong);margin-top:4px}
+.mount-grid .area-btn{padding:11px 8px}
+
+/* ── Cards & rows ──────────────────────────────────────────────────── */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:.35rem 1rem;box-shadow:var(--shadow-sm);
+}
+.row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:11px 0;border-bottom:1px solid var(--border);
+}
+.row:last-child{border-bottom:none}
+.row-left{display:flex;flex-direction:column;gap:2px;min-width:0}
+.row-name{font-size:13.5px;font-weight:500;color:var(--fg)}
+.row-price{font-size:11.5px;color:var(--muted)}
+.row-price.pct{color:var(--warn);font-weight:600}
+.row-none{font-size:12px;color:var(--muted-2)}
+
+/* ── Toggle switch ─────────────────────────────────────────────────── */
+.toggle-sw{position:relative;width:40px;height:22px;flex:none}
+.toggle-sw input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}
+.trk{
+  position:absolute;inset:0;background:var(--border-strong);border-radius:22px;
+  transition:background .2s var(--ease);pointer-events:none;
+}
+.trk:before{
+  content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;
+  background:#fff;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.25);
+  transition:transform .2s var(--ease);
+}
+.toggle-sw input:checked+.trk{background:var(--accent)}
+.toggle-sw input:checked+.trk:before{transform:translateX(18px)}
+.toggle-sw input:focus-visible+.trk{box-shadow:0 0 0 3px var(--accent-ring)}
+
+/* ── Stepper ───────────────────────────────────────────────────────── */
+.ctr{
+  display:flex;align-items:center;gap:2px;flex:none;
+  background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-xs);padding:2px;
+}
+.cbtn{
+  width:28px;height:28px;border:none;border-radius:6px;background:transparent;cursor:pointer;
+  display:grid;place-items:center;color:var(--secondary);
+  transition:background .15s var(--ease),color .15s var(--ease);
+}
+.cbtn:hover:not(:disabled){background:var(--accent-soft);color:var(--accent-strong)}
+.cbtn:active:not(:disabled){transform:scale(.9)}
+.cbtn:disabled{color:var(--muted-2);cursor:not-allowed;opacity:.5}
+.cbtn svg{width:15px;height:15px;stroke-width:2.4}
+.cval{font-size:14px;font-weight:700;min-width:22px;text-align:center;font-variant-numeric:tabular-nums;color:var(--fg)}
+.cval.on{color:var(--accent-strong)}
+
+/* ── Material input ────────────────────────────────────────────────── */
+.mat-field{margin-top:.4rem}
+.mat-field label{display:block;font-size:12.5px;font-weight:600;color:var(--secondary);margin-bottom:.4rem}
+.mat-input{position:relative;display:flex;align-items:center}
+.mat-input .cur{
+  position:absolute;right:14px;font-size:13px;font-weight:600;color:var(--muted);pointer-events:none;
+}
+.mat-input input{
+  width:100%;padding:12px 46px 12px 14px;border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);font-size:15px;font-weight:600;font-family:inherit;
+  background:var(--surface-2);color:var(--fg);
+  transition:border-color .18s var(--ease),box-shadow .18s var(--ease),background .18s var(--ease);
+  -moz-appearance:textfield;
+}
+.mat-input input::-webkit-outer-spin-button,.mat-input input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.mat-input input::placeholder{color:var(--muted-2);font-weight:500}
+.mat-input input:hover{border-color:var(--border-strong)}
+.mat-input input:focus{outline:none;border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 3px var(--accent-ring)}
+
+.pct-note{
+  display:flex;gap:.5rem;align-items:flex-start;
+  font-size:11.5px;color:var(--warn);margin-top:10px;padding:9px 11px;
+  background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:var(--radius-xs);
+}
+.pct-note svg{width:14px;height:14px;flex:none;margin-top:1px}
+
+/* ── Results ───────────────────────────────────────────────────────── */
+.results{
+  margin-top:1.6rem;background:var(--surface-2);
+  border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem 1.1rem;
+}
+.result-primary{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:.9rem}
+.result-primary .lbl{font-size:12.5px;font-weight:600;color:var(--muted)}
+.result-primary .val{font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--fg);font-variant-numeric:tabular-nums}
+.result-split{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 13px}
+.metric-label{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.metric-label .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.metric-val{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.metric-val.wk{color:var(--ok)}
+.metric-val.co{color:var(--info)}
+
+.check-row{
+  display:flex;align-items:center;gap:.6rem;
+  margin-top:.75rem;padding:11px 13px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;
+  border:1px solid transparent;
+}
+.check-row .ic{flex:none;display:grid;place-items:center}
+.check-row .ic svg{width:18px;height:18px}
+.check-row .ctxt{flex:1;min-width:0}
+.check-row .badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.check-row.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-border)}
+.check-row.ok .badge{background:color-mix(in srgb,var(--ok) 16%,transparent)}
+.check-row.bad{background:var(--bad-bg);color:var(--bad);border-color:var(--bad-border)}
+.check-row.bad .badge{background:color-mix(in srgb,var(--bad) 16%,transparent)}
+
+@media (max-width:400px){
+  body{padding:.75rem}
+  .hd,.body{padding-left:1.15rem;padding-right:1.15rem}
+  .result-primary .val{font-size:26px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
-<h2>Durchdacht — Kalkulátor montáže</h2>
 
-<div class="prod-tabs">
-  <div class="prod-tab active" onclick="setProduct('pergola',this)">Bioklimatická pergola</div>
-  <div class="prod-tab" onclick="setProduct('roof',this)">Střecha terasy</div>
-</div>
-
-<div class="section-label">Typ uchycení</div>
-<div class="mount-grid">
-  <div class="area-btn active" id="mount-free" onclick="setMount('free',this)" style="text-align:center;padding:8px">
-    <div class="area-label">Volně stojící</div>
-  </div>
-  <div class="area-btn" id="mount-wall" onclick="setMount('wall',this)" style="text-align:center;padding:8px">
-    <div class="area-label">Ke zdi (+2 500 Kč)</div>
-  </div>
-</div>
-
-<div class="section-label">Plocha</div>
-<div class="area-grid">
-  <div class="area-btn active" onclick="selectArea('small',this)">
-    <div class="area-label">do 12 m²</div>
-    <div class="area-sub">např. 3×4 m</div>
-    <div class="area-price">12 000 Kč</div>
-  </div>
-  <div class="area-btn" onclick="selectArea('medium',this)">
-    <div class="area-label">12–20 m²</div>
-    <div class="area-sub">např. 4×5 m</div>
-    <div class="area-price">16 000 Kč</div>
-  </div>
-  <div class="area-btn" onclick="selectArea('large',this)">
-    <div class="area-label">20+ m²</div>
-    <div class="area-sub">např. 4×6 m</div>
-    <div class="area-price">21 000 Kč</div>
-  </div>
-</div>
-
-<div class="section-label">Příplatky</div>
-<div class="card">
-  <div class="row">
-    <div class="row-left"><span class="row-name">Elektro (motory + LED)</span><span class="row-price">+2 000 Kč</span></div>
-    <label class="toggle-sw"><input type="checkbox" id="t-elec" onchange="calc()"><span class="trk"></span></label>
-  </div>
-  <div class="row">
-    <div class="row-left"><span class="row-name">Složitý terén / přístup</span><span class="row-price">+3 000 Kč</span></div>
-    <label class="toggle-sw"><input type="checkbox" id="t-terrain" onchange="calc()"><span class="trk"></span></label>
-  </div>
-  <div class="row" id="row-glass-roof" style="display:none">
-    <div class="row-left"><span class="row-name">Skleněná střecha (vs polykarbonát)</span><span class="row-price">+2 000 Kč</span></div>
-    <label class="toggle-sw"><input type="checkbox" id="t-glassroof" onchange="calc()"><span class="trk"></span></label>
-  </div>
-</div>
-
-<div class="section-label">Příslušenství — montáž</div>
-<div class="card">
-  <div class="row">
-    <div class="row-left"><span class="row-name">Screen elektrická</span><span class="row-price">2 500 Kč / ks</span></div>
-    <div class="ctr"><button class="cbtn" onclick="chg('se',-1)">−</button><span class="cval" id="c-se">0</span><button class="cbtn" onclick="chg('se',1)">+</button></div>
-  </div>
-  <div class="row">
-    <div class="row-left"><span class="row-name">Screen manuální</span><span class="row-price">1 500 Kč / ks</span></div>
-    <div class="ctr"><button class="cbtn" onclick="chg('sm',-1)">−</button><span class="cval" id="c-sm">0</span><button class="cbtn" onclick="chg('sm',1)">+</button></div>
-  </div>
-  <div class="row">
-    <div class="row-left"><span class="row-name">Skleněný panel (fixovaný)</span><span class="row-price">2 500 Kč / ks</span></div>
-    <div class="ctr"><button class="cbtn" onclick="chg('gp',-1)">−</button><span class="cval" id="c-gp">0</span><button class="cbtn" onclick="chg('gp',1)">+</button></div>
-  </div>
-  <div class="row">
-    <div class="row-left"><span class="row-name">Posuvné dveře (manuální)</span><span class="row-price">500 Kč / sklo</span></div>
-    <div class="ctr"><button class="cbtn" onclick="chg('sd',-1)">−</button><span class="cval" id="c-sd">0</span><button class="cbtn" onclick="chg('sd',1)">+</button></div>
-  </div>
-  <div class="row">
-    <div class="row-left"><span class="row-name">Stěna polykarbonát (fest)</span><span class="row-price">300 Kč / pásek</span></div>
-    <div class="ctr"><button class="cbtn" onclick="chg('pc',-1)">−</button><span class="cval" id="c-pc">0</span><button class="cbtn" onclick="chg('pc',1)">+</button></div>
-  </div>
-  <div class="row">
-    <div class="row-left"><span class="row-name">Topný systém</span><span class="row-price">500 Kč / ks</span></div>
-    <div class="ctr"><button class="cbtn" onclick="chg('heat',-1)">−</button><span class="cval" id="c-heat">0</span><button class="cbtn" onclick="chg('heat',1)">+</button></div>
-  </div>
-  <div class="row">
-    <div class="row-left"><span class="row-name">Klika dveří / dešťové čidlo / LED / izolace</span><span class="row-price">0 Kč (zahrnuto)</span></div>
-    <div style="font-size:12px;color:#888">—</div>
-  </div>
-</div>
-
-<div class="section-label">Položky od ceny materiálu (zadejte cenu)</div>
-<div class="mat-row">
-  <label>Materiál bez DPH (Kč)</label>
-  <input type="number" id="mat" placeholder="např. 230 540" oninput="calc()" step="1000">
-</div>
-<div id="pct-items" style="display:none">
-  <div class="card" style="margin-top:8px">
-    <div class="row">
-      <div class="row-left"><span class="row-name">Boční stěna / lamela fixovaná</span><span class="row-price pct">10 % z materiálu</span></div>
-      <label class="toggle-sw"><input type="checkbox" id="t-sidewall" onchange="calc()"><span class="trk"></span></label>
+  <header class="hd">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg>
+      </span>
+      <div>
+        <h1>Durchdacht</h1>
+        <p>Kalkulátor montáže</p>
+      </div>
     </div>
-    <div class="row">
-      <div class="row-left"><span class="row-name">Markýza (elektro)</span><span class="row-price pct">10 % z materiálu</span></div>
-      <label class="toggle-sw"><input type="checkbox" id="t-marquee" onchange="calc()"><span class="trk"></span></label>
+  </header>
+
+  <div class="body">
+
+    <div class="section-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+      Produkt
     </div>
-    <div class="row">
-      <div class="row-left"><span class="row-name">Profily na dveře</span><span class="row-price pct">10 % z materiálu</span></div>
-      <label class="toggle-sw"><input type="checkbox" id="t-profile" onchange="calc()"><span class="trk"></span></label>
+    <div class="prod-tabs" role="tablist" aria-label="Produkt">
+      <div class="prod-tab active" role="tab" aria-selected="true" tabindex="0" onclick="setProduct('pergola',this)" onkeydown="keyActivate(event)">Bioklimatická pergola</div>
+      <div class="prod-tab" role="tab" aria-selected="false" tabindex="0" onclick="setProduct('roof',this)" onkeydown="keyActivate(event)">Střecha terasy</div>
     </div>
+
+    <div class="section-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V10l8-6 8 6v11"/><path d="M4 21h16"/></svg>
+      Typ uchycení
+    </div>
+    <div class="mount-grid" role="group" aria-label="Typ uchycení">
+      <div class="area-btn active" id="mount-free" role="button" aria-pressed="true" tabindex="0" onclick="setMount('free',this)" onkeydown="keyActivate(event)">
+        <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <div class="area-label">Volně stojící</div>
+      </div>
+      <div class="area-btn" id="mount-wall" role="button" aria-pressed="false" tabindex="0" onclick="setMount('wall',this)" onkeydown="keyActivate(event)">
+        <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <div class="area-label">Ke zdi</div>
+        <div class="area-price">+2 500 Kč</div>
+      </div>
+    </div>
+
+    <div class="section-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h18"/></svg>
+      Plocha
+    </div>
+    <div class="area-grid" role="group" aria-label="Plocha">
+      <div class="area-btn active" role="button" aria-pressed="true" tabindex="0" onclick="selectArea('small',this)" onkeydown="keyActivate(event)">
+        <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <div class="area-label">do 12 m²</div>
+        <div class="area-sub">např. 3×4 m</div>
+        <div class="area-price">12 000 Kč</div>
+      </div>
+      <div class="area-btn" role="button" aria-pressed="false" tabindex="0" onclick="selectArea('medium',this)" onkeydown="keyActivate(event)">
+        <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <div class="area-label">12–20 m²</div>
+        <div class="area-sub">např. 4×5 m</div>
+        <div class="area-price">16 000 Kč</div>
+      </div>
+      <div class="area-btn" role="button" aria-pressed="false" tabindex="0" onclick="selectArea('large',this)" onkeydown="keyActivate(event)">
+        <span class="tick" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+        <div class="area-label">20+ m²</div>
+        <div class="area-sub">např. 4×6 m</div>
+        <div class="area-price">21 000 Kč</div>
+      </div>
+    </div>
+
+    <div class="section-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m13 2-3 9h5l-3 9"/></svg>
+      Příplatky
+    </div>
+    <div class="card">
+      <div class="row">
+        <div class="row-left"><span class="row-name">Elektro (motory + LED)</span><span class="row-price">+2 000 Kč</span></div>
+        <label class="toggle-sw"><input type="checkbox" id="t-elec" onchange="calc()" aria-label="Elektro (motory + LED), +2 000 Kč"><span class="trk"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-left"><span class="row-name">Složitý terén / přístup</span><span class="row-price">+3 000 Kč</span></div>
+        <label class="toggle-sw"><input type="checkbox" id="t-terrain" onchange="calc()" aria-label="Složitý terén nebo přístup, +3 000 Kč"><span class="trk"></span></label>
+      </div>
+      <div class="row" id="row-glass-roof" style="display:none">
+        <div class="row-left"><span class="row-name">Skleněná střecha (vs polykarbonát)</span><span class="row-price">+2 000 Kč</span></div>
+        <label class="toggle-sw"><input type="checkbox" id="t-glassroof" onchange="calc()" aria-label="Skleněná střecha, +2 000 Kč"><span class="trk"></span></label>
+      </div>
+    </div>
+
+    <div class="section-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 8l10 5 10-5-10-5Z"/><path d="M2 16l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Příslušenství — montáž
+    </div>
+    <div class="card">
+      <div class="row">
+        <div class="row-left"><span class="row-name">Screen elektrická</span><span class="row-price">2 500 Kč / ks</span></div>
+        <div class="ctr">
+          <button class="cbtn" id="b-se-minus" onclick="chg('se',-1)" aria-label="Screen elektrická − odebrat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+          <span class="cval" id="c-se" aria-live="polite">0</span>
+          <button class="cbtn" onclick="chg('se',1)" aria-label="Screen elektrická + přidat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-left"><span class="row-name">Screen manuální</span><span class="row-price">1 500 Kč / ks</span></div>
+        <div class="ctr">
+          <button class="cbtn" id="b-sm-minus" onclick="chg('sm',-1)" aria-label="Screen manuální − odebrat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+          <span class="cval" id="c-sm" aria-live="polite">0</span>
+          <button class="cbtn" onclick="chg('sm',1)" aria-label="Screen manuální + přidat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-left"><span class="row-name">Skleněný panel (fixovaný)</span><span class="row-price">2 500 Kč / ks</span></div>
+        <div class="ctr">
+          <button class="cbtn" id="b-gp-minus" onclick="chg('gp',-1)" aria-label="Skleněný panel − odebrat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+          <span class="cval" id="c-gp" aria-live="polite">0</span>
+          <button class="cbtn" onclick="chg('gp',1)" aria-label="Skleněný panel + přidat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-left"><span class="row-name">Posuvné dveře (manuální)</span><span class="row-price">500 Kč / sklo</span></div>
+        <div class="ctr">
+          <button class="cbtn" id="b-sd-minus" onclick="chg('sd',-1)" aria-label="Posuvné dveře − odebrat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+          <span class="cval" id="c-sd" aria-live="polite">0</span>
+          <button class="cbtn" onclick="chg('sd',1)" aria-label="Posuvné dveře + přidat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-left"><span class="row-name">Stěna polykarbonát (fest)</span><span class="row-price">300 Kč / pásek</span></div>
+        <div class="ctr">
+          <button class="cbtn" id="b-pc-minus" onclick="chg('pc',-1)" aria-label="Stěna polykarbonát − odebrat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+          <span class="cval" id="c-pc" aria-live="polite">0</span>
+          <button class="cbtn" onclick="chg('pc',1)" aria-label="Stěna polykarbonát + přidat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-left"><span class="row-name">Topný systém</span><span class="row-price">500 Kč / ks</span></div>
+        <div class="ctr">
+          <button class="cbtn" id="b-heat-minus" onclick="chg('heat',-1)" aria-label="Topný systém − odebrat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+          <span class="cval" id="c-heat" aria-live="polite">0</span>
+          <button class="cbtn" onclick="chg('heat',1)" aria-label="Topný systém + přidat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-left"><span class="row-name">Klika dveří / dešťové čidlo / LED / izolace</span><span class="row-price">Zahrnuto v ceně</span></div>
+        <span class="row-none">0 Kč</span>
+      </div>
+    </div>
+
+    <div class="section-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Položky od ceny materiálu
+    </div>
+    <div class="mat-field">
+      <label for="mat">Materiál bez DPH</label>
+      <div class="mat-input">
+        <input type="number" id="mat" placeholder="např. 230 540" oninput="calc()" step="1000" min="0" inputmode="numeric">
+        <span class="cur">Kč</span>
+      </div>
+    </div>
+    <div id="pct-items" style="display:none">
+      <div class="card" style="margin-top:10px">
+        <div class="row">
+          <div class="row-left"><span class="row-name">Boční stěna / lamela fixovaná</span><span class="row-price pct">10 % z materiálu</span></div>
+          <label class="toggle-sw"><input type="checkbox" id="t-sidewall" onchange="calc()" aria-label="Boční stěna nebo lamela fixovaná, 10 % z materiálu"><span class="trk"></span></label>
+        </div>
+        <div class="row">
+          <div class="row-left"><span class="row-name">Markýza (elektro)</span><span class="row-price pct">10 % z materiálu</span></div>
+          <label class="toggle-sw"><input type="checkbox" id="t-marquee" onchange="calc()" aria-label="Markýza elektro, 10 % z materiálu"><span class="trk"></span></label>
+        </div>
+        <div class="row">
+          <div class="row-left"><span class="row-name">Profily na dveře</span><span class="row-price pct">10 % z materiálu</span></div>
+          <label class="toggle-sw"><input type="checkbox" id="t-profile" onchange="calc()" aria-label="Profily na dveře, 10 % z materiálu"><span class="trk"></span></label>
+        </div>
+      </div>
+    </div>
+    <div id="pct-hint" class="pct-note" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      <span>Položky v % jsou vypočítány ze zadané ceny materiálu.</span>
+    </div>
+
+    <div class="results" aria-live="polite">
+      <div class="result-primary">
+        <span class="lbl">Zákazník platí</span>
+        <span class="val" id="r-cl">12 000 Kč</span>
+      </div>
+      <div class="result-split">
+        <div class="metric">
+          <div class="metric-label"><span class="dot" style="background:var(--ok)"></span>Dělníci (85 %)</div>
+          <div class="metric-val wk" id="r-wk">10 200 Kč</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label"><span class="dot" style="background:var(--info)"></span>Firma (15 %)</div>
+          <div class="metric-val co" id="r-co">1 800 Kč</div>
+        </div>
+      </div>
+      <div class="check-row" id="chk" style="display:none">
+        <span class="ic" id="chk-ic"></span>
+        <span class="ctxt" id="chk-txt"></span>
+        <span class="badge" id="chk-badge"></span>
+      </div>
+    </div>
+
   </div>
-</div>
-<div id="pct-hint" class="pct-note" style="display:none">Položky % jsou vypočítány z zadané ceny materiálu</div>
-
-<div class="result-grid">
-  <div class="metric"><div class="metric-label">Zákazník platí</div><div class="metric-val cl" id="r-cl">12 000 Kč</div></div>
-  <div class="metric"><div class="metric-label">Dělníci (85 %)</div><div class="metric-val wk" id="r-wk">10 200 Kč</div></div>
-  <div class="metric"><div class="metric-label">Firma (15 %)</div><div class="metric-val co" id="r-co">1 800 Kč</div></div>
-</div>
-
-<div class="check-row" id="chk" style="display:none">
-  <span id="chk-txt"></span><span id="chk-badge"></span>
-</div>
-
 </div>
 
 <script>
@@ -179,28 +459,39 @@ const BASE={small:12000,medium:16000,large:21000};
 const ACC_FIXED={se:2500,sm:1500,gp:2500,sd:500,pc:300,heat:500};
 let st={product:'pergola',mount:'free',area:'small',accs:{se:0,sm:0,gp:0,sd:0,pc:0,heat:0}};
 
+const ICON_OK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>';
+const ICON_BAD='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg>';
+
+function keyActivate(e){
+  if(e.key==='Enter'||e.key===' '){e.preventDefault();e.currentTarget.click();}
+}
 function setProduct(p,el){
   st.product=p;
-  document.querySelectorAll('.prod-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
+  document.querySelectorAll('.prod-tab').forEach(t=>{t.classList.remove('active');t.setAttribute('aria-selected','false');});
+  el.classList.add('active');el.setAttribute('aria-selected','true');
   document.getElementById('row-glass-roof').style.display=p==='roof'?'flex':'none';
+  if(p!=='roof') document.getElementById('t-glassroof').checked=false;
   calc();
 }
 function setMount(m,el){
   st.mount=m;
-  document.querySelectorAll('#mount-free,#mount-wall').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
+  document.querySelectorAll('#mount-free,#mount-wall').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});
+  el.classList.add('active');el.setAttribute('aria-pressed','true');
   calc();
 }
 function selectArea(a,el){
   st.area=a;
-  document.querySelectorAll('.area-btn').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
+  document.querySelectorAll('.area-grid .area-btn').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false');});
+  el.classList.add('active');el.setAttribute('aria-pressed','true');
   calc();
 }
 function chg(k,d){
   st.accs[k]=Math.max(0,(st.accs[k]||0)+d);
-  document.getElementById('c-'+k).textContent=st.accs[k];
+  const cval=document.getElementById('c-'+k);
+  cval.textContent=st.accs[k];
+  cval.classList.toggle('on',st.accs[k]>0);
+  const minus=document.getElementById('b-'+k+'-minus');
+  if(minus) minus.disabled=st.accs[k]===0;
   calc();
 }
 function fmt(n){return Math.round(n).toLocaleString('cs-CZ')+' Kč'}
@@ -214,7 +505,7 @@ function calc(){
   const mat=parseFloat(document.getElementById('mat').value)||0;
   const hasMat=mat>0;
   document.getElementById('pct-items').style.display=hasMat?'block':'none';
-  document.getElementById('pct-hint').style.display=hasMat?'block':'none';
+  document.getElementById('pct-hint').style.display=hasMat?'flex':'none';
   if(hasMat){
     if(document.getElementById('t-sidewall').checked) total+=mat*0.10;
     if(document.getElementById('t-marquee').checked) total+=mat*0.10;
@@ -231,10 +522,12 @@ function calc(){
     chkEl.style.display='flex';
     if(pct>=13){
       chkEl.className='check-row ok';
+      document.getElementById('chk-ic').innerHTML=ICON_OK;
       document.getElementById('chk-txt').textContent='Montáž '+pct+' % z materiálu';
-      document.getElementById('chk-badge').textContent='OK (≥13 %)';
+      document.getElementById('chk-badge').textContent='OK (≥ 13 %)';
     } else {
       chkEl.className='check-row bad';
+      document.getElementById('chk-ic').innerHTML=ICON_BAD;
       document.getElementById('chk-txt').textContent='Montáž '+pct+' % z materiálu';
       document.getElementById('chk-badge').textContent='Pod 13 % — uprav cenu';
     }
@@ -242,6 +535,10 @@ function calc(){
     chkEl.style.display='none';
   }
 }
+Object.keys(st.accs).forEach(k=>{
+  const minus=document.getElementById('b-'+k+'-minus');
+  if(minus) minus.disabled=st.accs[k]===0;
+});
 calc();
 </script>
 </body>
